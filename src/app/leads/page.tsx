@@ -61,26 +61,30 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <AutoRefresh active={importStatus.kind === "running"} />
-      <div className="flex items-center gap-2 text-sm">
-        <span className="mute">Visualizar:</span>
-        {(["qualificados", "todos", "enriquecidos"] as const).map((view) => (
-          <Link key={view} href={viewHref(view)} className={filters.view === view ? "nav-on" : "nav-off"}>
-            {VIEW_LABEL[view]} ({counts[view]})
-          </Link>
-        ))}
-        {filters.view === "qualificados" && (
-          <span className="mute text-xs">
-            Pontuação a partir de {getSettings().minQualifiedScore}, editável em Configurações.
-          </span>
-        )}
-        {filters.view === "enriquecidos" && (
-          <span className="mute text-xs">Só entram leads com um único CNPJ confirmado.</span>
-        )}
-      </div>
+      <header className="page-head">
+        <div>
+          <h1>Leads</h1>
+          {filters.view === "qualificados" && (
+            <p className="mute mt-1 text-sm">
+              Pontuação a partir de {getSettings().minQualifiedScore}, editável em Configurações.
+            </p>
+          )}
+          {filters.view === "enriquecidos" && (
+            <p className="mute mt-1 text-sm">Só entram leads com um único CNPJ confirmado.</p>
+          )}
+        </div>
+        <div className="views">
+          {(["qualificados", "todos", "enriquecidos"] as const).map((view) => (
+            <Link key={view} href={viewHref(view)} className={filters.view === view ? "nav-on" : "nav-off"}>
+              {VIEW_LABEL[view]} ({counts[view]})
+            </Link>
+          ))}
+        </div>
+      </header>
 
-      <form className="panel flex flex-wrap items-end gap-4 text-sm">
+      <form className="panel filters text-sm">
         <input type="hidden" name="ver" value={filters.view} />
         <label>
           <span className="mute mb-1 block">Cidade</span>
@@ -108,31 +112,30 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
           <span className="mute mb-1 block">Pontuação mínima</span>
           <input type="number" name="min" min={0} defaultValue={filters.minScore ?? ""} className="w-28" />
         </label>
-        <label className="flex items-center gap-2 pb-2">
+        <label className="check text-sm">
           <input type="checkbox" name="optout" value="1" defaultChecked={filters.showOptOut} />
           Mostrar descadastrados
         </label>
         <button className="btn">Filtrar</button>
       </form>
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <p className="mute text-sm">{leads.length} leads</p>
+      <div className="toolbar">
+        <p className="mute text-sm">{leads.length} leads</p>
+        <div className="toolbar-actions">
           {failedSites > 0 && <ReverifyButton count={failedSites} />}
           <ImportBaseButton status={importStatus} />
           {filters.view === "qualificados" && <EnrichButton filters={filters} />}
+          <ExportButton filters={filters} />
         </div>
-        <ExportButton filters={filters} />
       </div>
 
-      <div className="panel overflow-x-auto">
-        <table>
+      <div className="panel lead-scroll">
+        <table className="lead-table">
           <thead>
             <tr>
               <th className="px-3 py-2">Pontos</th>
               <th className="px-3">Negócio</th>
               {filters.view === "enriquecidos" && <th className="px-3">Receita</th>}
-              <th className="px-3">Sinais</th>
               <th className="px-3">Contato</th>
               <th className="px-3">Avaliações</th>
               <th className="px-3">Site</th>
@@ -142,16 +145,17 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
           <tbody>
             {leads.map((l) => (
               <tr key={l.id} className={l.optOut ? "opacity-50" : undefined}>
-                <td className="px-3 py-3 text-lg font-semibold">{l.score}</td>
-                <td className="px-3 py-3">
+                <td data-label="Pontos" className="px-3 py-3 text-lg font-semibold">{l.score}</td>
+                <td data-label="Negócio" className="px-3 py-3">
                   <a href={l.mapsUri ?? "#"} target="_blank" rel="noopener noreferrer" className="font-medium hover:underline">
                     {l.name}
                   </a>
                   <p className="mute text-xs">{l.address}</p>
                   <p className="faint text-xs">{l.segmentNames}</p>
+                  {l.signals.length > 0 && <p className="mute mt-1 text-xs leading-5">{l.signals.join(" · ")}</p>}
                 </td>
                 {filters.view === "enriquecidos" && (
-                  <td className="px-3 py-3 text-xs">
+                  <td data-label="Receita" className="px-3 py-3 text-xs">
                     <p className="font-medium">{l.cnpjAssertiveness}%</p>
                     <p>{l.cnpj ? formatCnpj(l.cnpj) : ""}</p>
                     <p>{l.cnpjRazao}</p>
@@ -163,14 +167,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
                     {l.cnpjCnaeDescricao && <p className="mute">{l.cnpjCnaeDescricao}</p>}
                   </td>
                 )}
-                <td className="px-3 py-3">
-                  <ul className="space-y-0.5 text-xs">
-                    {l.signals.map((s) => (
-                      <li key={s}>{s}</li>
-                    ))}
-                  </ul>
-                </td>
-                <td className="px-3 py-3 text-xs">
+                <td data-label="Contato" className="px-3 py-3 text-xs">
                   {l.phone && <p>{l.phone}</p>}
                   {l.whatsapp ? (
                     <a href={l.whatsapp} target="_blank" rel="noopener noreferrer" className="block underline">
@@ -190,10 +187,10 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
                     <p key={e}>{e}</p>
                   ))}
                 </td>
-                <td className="px-3 py-3 text-xs">
+                <td data-label="Avaliações" className="px-3 py-3 text-xs">
                   {l.ratingCount ?? 0} {l.rating ? `· nota ${l.rating}` : ""}
                 </td>
-                <td className="px-3 py-3 text-xs">
+                <td data-label="Site" className="px-3 py-3 text-xs">
                   {l.website ? (
                     <a href={l.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
                       {new URL(l.website).hostname}

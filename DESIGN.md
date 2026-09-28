@@ -6,4 +6,4 @@ Painéis um tom acima do campo, com borda de 1px e raio de 14px. Sem sombra. O b
 
 A fonte é Sora. Números de tabela usam algarismos tabulares. Aviso de cota usa `#e6c98a`. Erro usa `#f0b4ae`.
 
-O trilho da esquerda leva a marca e as três telas. No celular ele vira uma faixa no topo. A cota do mês é uma linha, não um número gigante.
+A marca e as três telas ficam numa faixa no topo. No celular essa faixa quebra em duas linhas. A cota do mês é uma linha, não um número gigante.

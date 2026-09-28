@@ -22,7 +22,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
     <form action={action} className="max-w-2xl space-y-6">
       <section className="panel space-y-4">
         <h2 className="font-semibold">Pesos da pontuação</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="fields">
           <Field label="Sem site" name="noSite" value={weights.noSite} />
           <Field label="Muitas avaliações" name="manyReviews" value={weights.manyReviews} />
           <Field label="Sem pixel de anúncios" name="noAdsPixel" value={weights.noAdsPixel} hint="Só conta quando o site foi verificado." />
@@ -38,7 +38,7 @@ export function SettingsForm({ settings }: { settings: Settings }) {
 
       <section className="panel space-y-4">
         <h2 className="font-semibold">Critérios e limites</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="fields">
           <Field label="Mínimo de avaliações para “muitas avaliações”" name="minReviews" value={settings.minReviews} />
           <Field
             label="Pontuação mínima para “qualificado”"

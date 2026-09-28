@@ -13,7 +13,7 @@ const MISSING_ENV = ["GOOGLE_PLACES_API_KEY", "GOOGLE_SHEETS_SA_JSON", "RADAR_SH
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={sora.variable}>
+    <html lang="pt-BR" className={sora.variable} suppressHydrationWarning>
       <body>
         <Shell
           warning={

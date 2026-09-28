@@ -110,7 +110,7 @@ Para adicionar, editar `SEED_CITIES` ou `SEED_SEGMENTS` em `src/lib/db/index.ts`
 - Quando uma área chega a 60, o radar divide em 4 e busca de novo (até a profundidade configurada).
 - O mês é contado no fuso do Pacífico, igual à cobrança do Google.
 - Risco aceito: se o contador interno falhar, o Google deixa passar até 150 buscas por dia. No pior caso, cerca de US$ 128 no mês.
-- Quando a cota diária do Google acaba, a busca para e grava "Cota excedida. Tente novamente amanhã." O histórico esconde essas buscas e mostra só essa frase acima da tabela. O limite mensal interno continua com a mensagem própria.
+- Quando a cota diária do Google acaba, a busca para e grava "Cota excedida. Tente novamente amanhã." O histórico esconde essas buscas e mostra só essa frase acima da lista. O limite mensal interno continua com a mensagem própria.
 ## Arquitetura
 
 Next.js 16 (App Router, server actions) + TypeScript + Drizzle ORM + SQLite (`better-sqlite3`) + Tailwind 4. Versões fixas no `package.json`.

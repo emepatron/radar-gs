@@ -36,88 +36,98 @@ export default function SearchesPage() {
   const dailyQuota = searchRows.some((r) => isDailyQuotaError(r.search.error));
   const visibleRows = searchRows.filter((r) => !isDailyQuotaError(r.search.error));
 
+  const ratio = monthlyLimit > 0 ? used / monthlyLimit : 0;
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-5">
       <AutoRefresh active={active} />
 
-      <section className="panel">
-        <div className="flex items-baseline justify-between gap-4">
+      <section className="panel quota">
+        <div className="split">
           <h2 className="font-semibold">Cota do mês</h2>
-          <p className="mute text-sm">
-            {used} de {monthlyLimit} · {monthKey()}
+          <p className="quota-count">
+            {used}
+            <span>
+              {" "}
+              de {monthlyLimit} · {monthKey()}
+            </span>
           </p>
         </div>
-        <div className={`meter mt-3 ${used / monthlyLimit > 0.8 ? "warn" : ""}`}>
-          <span style={{ width: `${Math.min(100, (used / monthlyLimit) * 100)}%` }} />
+        <div className={`meter ${ratio > 0.8 ? "warn" : ""}`}>
+          <span style={{ width: `${Math.min(100, ratio * 100)}%` }} />
         </div>
-        <p className="mute mt-3 text-sm">Geocodificações de cidades no mês: {geocoding} (10 mil grátis).</p>
+        <p className="faint text-sm">Geocodificações de cidades no mês: {geocoding} (10 mil grátis).</p>
       </section>
 
       <section className="panel">
-        <h2 className="mb-4 font-semibold">Nova busca</h2>
-        <form action={startSearches} className="flex flex-wrap items-end gap-6">
-          <label className="text-sm">
-            <span className="mute mb-1 block">Cidade</span>
-            <select name="cityId" required>
-              {cityRows.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}/{c.uf}
-                </option>
-              ))}
-            </select>
-          </label>
+        <h2 className="font-semibold">Nova busca</h2>
+        <form action={startSearches} className="search-form">
+          <div className="search-bar">
+            <label className="text-sm">
+              <span className="mute">Cidade</span>
+              <select name="cityId" required>
+                {cityRows.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}/{c.uf}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button className="btn-primary">Buscar</button>
+          </div>
           <fieldset className="text-sm">
-            <legend className="mute mb-1">Segmentos</legend>
-            <div className="flex flex-wrap gap-4">
+            <legend className="mute">Segmentos</legend>
+            <div className="chips">
               {segmentRows.map((s) => (
-                <label key={s.id} className="flex items-center gap-2">
+                <label key={s.id} className="chip">
                   <input type="checkbox" name="segmentIds" value={s.id} />
                   {s.name}
                 </label>
               ))}
             </div>
           </fieldset>
-          <button className="btn-primary">Buscar</button>
         </form>
       </section>
 
       <section className="panel">
-        <h2 className="mb-4 font-semibold">Histórico</h2>
-        {dailyQuota && <p className="warn mb-4 text-sm">Cota excedida. Tente novamente amanhã.</p>}
+        <h2 className="font-semibold">Histórico</h2>
+        {dailyQuota && <p className="warn text-sm">Cota excedida. Tente novamente amanhã.</p>}
         {visibleRows.length === 0 ? (
           dailyQuota ? null : <p className="mute text-sm">Nenhuma busca ainda.</p>
         ) : (
-          <div className="overflow-x-auto">
-          <table>
-            <thead>
-              <tr>
-                <th className="py-2">Cidade</th>
-                <th>Segmento</th>
-                <th>Status</th>
-                <th>Buscas usadas</th>
-                <th>Negócios</th>
-                <th>Início</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visibleRows.map(({ search, cityName, segmentName }) => (
-                <tr key={search.id}>
-                  <td className="py-2">{cityName}</td>
-                  <td>{segmentName}</td>
-                  <td>
-                    {STATUS_LABEL[search.status]}
-                    {search.error && <p className="danger max-w-md text-xs">{search.error}</p>}
-                  </td>
-                  <td>{search.requestsUsed}</td>
-                  <td>{search.placesFound || "—"}</td>
-                  <td>{search.createdAt.toLocaleString("pt-BR", { timeZone: "America/Cuiaba" })}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          </div>
+          <ul className="runs">
+            {visibleRows.map(({ search, cityName, segmentName }) => (
+              <li key={search.id} className="run">
+                <div>
+                  <p className="run-city">{cityName}</p>
+                  <p className="mute text-sm">{segmentName}</p>
+                </div>
+                <p className={statusTone(search.status)}>
+                  {STATUS_LABEL[search.status]}
+                  {search.error && <span className="danger block text-xs">{search.error}</span>}
+                </p>
+                <p className="run-num">
+                  {search.requestsUsed}
+                  <span>Buscas usadas</span>
+                </p>
+                <p className="run-num">
+                  {search.placesFound || "—"}
+                  <span>Negócios</span>
+                </p>
+                <time className="faint text-sm" dateTime={search.createdAt.toISOString()}>
+                  {search.createdAt.toLocaleString("pt-BR", { timeZone: "America/Cuiaba" })}
+                </time>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
     </div>
   );
+}
+
+function statusTone(status: SearchStatus) {
+  if (status === "running" || status === "queued") return "warn text-sm";
+  if (status === "error" || status === "quota" || status === "interrupted") return "danger text-sm";
+  return "mute text-sm";
 }

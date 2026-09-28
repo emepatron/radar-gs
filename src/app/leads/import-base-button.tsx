@@ -10,7 +10,7 @@ export function ImportBaseButton({ status }: { status: ImportStatus }) {
   const blocked = status.kind === "done" || status.kind === "running" || pending;
 
   return (
-    <form action={action} className="flex items-center gap-3">
+    <form action={action} className="tool">
       {status.kind === "running" && status.percent != null && (
         <div className="w-56">
           <div className="meter">
@@ -22,7 +22,7 @@ export function ImportBaseButton({ status }: { status: ImportStatus }) {
         </div>
       )}
       {message && status.kind !== "running" && (
-        <p className={`text-sm ${status.kind === "error" || result?.ok === false ? "danger" : "mute"}`}>
+        <p className={`tool-note ${status.kind === "error" || result?.ok === false ? "danger" : "mute"}`}>
           {message}
         </p>
       )}
