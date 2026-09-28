@@ -40,6 +40,8 @@ Não copie `data/`, `.envrc` nem exportação de planilha. O banco nasce vazio n
 
 ## Como usar
 
+A marca e as três telas ficam numa faixa no topo. Em Buscas, a cidade ocupa a linha do botão, os segmentos são pílulas e o histórico é uma lista. Em Leads, a tabela vira cartão quando a tela é estreita. A cota do mês continua uma linha.
+
 1. **Buscas**: escolher a cidade, marcar os segmentos e clicar em Buscar. O histórico atualiza sozinho. O topo mostra a cota usada no mês.
 2. **Leads**: visões **Qualificados** (pontuação mínima definida em Configurações), **Todos** e **Enriquecidos**. Filtros por cidade, segmento e pontuação. Cada lead mostra os sinais que somaram pontos, telefone, WhatsApp, Instagram, e-mails, site e pixels. Enriquecidos mostra também a taxa do cruzamento, o CNPJ, a situação e se o CNAE confere.
 3. **Enriquecer dados**: na visão Qualificados, cruza os leads do filtro com a base da Receita. Não gasta busca do Google. Quem fica com um único CNPJ passa para Enriquecidos. Quem já foi cruzado não é refeito, a menos que a base da Receita seja importada de novo.
@@ -176,3 +178,5 @@ npm run typecheck
 ## Licença
 
 [MIT](LICENSE).
+
+O que mudou está em [CHANGELOG.md](CHANGELOG.md).
