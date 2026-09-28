@@ -26,6 +26,7 @@ export const segments = sqliteTable("segments", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull().unique(),
   query: text("query").notNull(),
+  cnaes: text("cnaes").notNull().default(""),
 });
 
 export const SEARCH_STATUSES = ["queued", "running", "done", "quota", "error", "interrupted"] as const;

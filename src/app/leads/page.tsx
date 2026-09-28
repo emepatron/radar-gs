@@ -161,7 +161,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Search
                     <p>{l.cnpjRazao}</p>
                     <p className="mute">{l.cnpjSituacao}</p>
                     <p>
-                      {l.cnaeMatch === "confere" ? "CNAE confere" : "CNAE diverge"}
+                      {l.cnaeMatch === "confere" ? "CNAE confere" : l.cnaeMatch === "diverge" ? "CNAE diverge" : "Sem CNAE no segmento"}
                       {l.cnpjCnae ? ` · ${formatCnae(l.cnpjCnae)}` : ""}
                     </p>
                     {l.cnpjCnaeDescricao && <p className="mute">{l.cnpjCnaeDescricao}</p>}

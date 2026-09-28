@@ -14,7 +14,7 @@ export type MatchResult =
       situacao: string;
       cnae: string;
       cnaeDescricao: string;
-      cnaeMatch: "confere" | "diverge";
+      cnaeMatch: "confere" | "diverge" | null;
     };
 
 type AddressRelation = "compativel" | "incomparavel" | "diverge";
@@ -112,7 +112,8 @@ export function matchPlace(
     situacao: chosen.situacao,
     cnae: chosen.cnaePrincipal,
     cnaeDescricao: chosen.cnaeDescricao,
-    cnaeMatch: allowedCnaes.some((code) => codes.has(code)) ? "confere" : "diverge",
+    cnaeMatch:
+      allowedCnaes.length === 0 ? null : allowedCnaes.some((code) => codes.has(code)) ? "confere" : "diverge",
   };
 }
 

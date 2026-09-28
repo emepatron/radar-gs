@@ -15,6 +15,13 @@
       "when": 1790552884882,
       "tag": "0001_hesitant_squadron_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790576638340,
+      "tag": "0002_living_mesmero",
+      "breakpoints": true
     }
   ]
 }

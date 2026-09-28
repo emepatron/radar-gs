@@ -11,7 +11,7 @@ import {
   type Establishment,
   type RadarCity,
 } from "./parse";
-import { cnaesForSegmentNames } from "./segments";
+import { cnaeCodes, cnaesForSegmentNames } from "./segments";
 import { importBlockedThisMonth, monthKeyCuiaba, nextMonthName } from "./import-job";
 import { enrichSummary } from "./summary";
 import { formatCnae, formatCnpj, normalizeName } from "./text";
@@ -127,6 +127,11 @@ describe("matchPlace", () => {
     const result = match("Academia Forte", "R. das Flores, 123 - Centro, Lucas do Rio Verde - MT", [est()]);
     expect(result).toMatchObject({ assertiveness: 100 });
   });
+
+  it("não marca CNAE quando o segmento não tem código", () => {
+    const result = match("Academia Forte", FLORES, [est()], []);
+    expect(result).toMatchObject({ status: "confirmado", cnaeMatch: null });
+  });
 });
 
 describe("parse da Receita", () => {
@@ -187,8 +192,10 @@ describe("parse da Receita", () => {
 });
 
 describe("segmentos e resumo", () => {
-  it("conhece o CNAE de academia e o resumo do botão", () => {
-    expect(cnaesForSegmentNames(["Academia"])).toEqual(["9313100"]);
+  it("lê os CNAEs cadastrados no segmento e o resumo do botão", () => {
+    expect(cnaeCodes("1091-1/01, 4721102")).toEqual(["1091101", "4721102"]);
+    expect(cnaesForSegmentNames([{ name: "Padaria", cnaes: "1091101" }], ["Padaria"])).toEqual(["1091101"]);
+    expect(cnaesForSegmentNames([{ name: "Padaria", cnaes: "" }], ["Padaria"])).toEqual([]);
     expect(enrichSummary(4, 2, 1)).toBe("4 entraram em Enriquecidos. 2 ficaram sem confirmação. 1 já tinham sido cruzados.");
     expect(enrichSummary(0, 0, 3)).toBe("Nenhum lead novo para cruzar. Os qualificados deste filtro já foram enriquecidos.");
   });

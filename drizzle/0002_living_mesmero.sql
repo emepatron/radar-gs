@@ -1,0 +1,1 @@
+ALTER TABLE `segments` ADD `cnaes` text DEFAULT '' NOT NULL;

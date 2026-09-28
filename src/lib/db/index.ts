@@ -12,11 +12,10 @@ const SEED_CITIES: { name: string; uf: string }[] = [
   // { name: "Nome do município", uf: "UF" },
 ];
 
-const SEED_SEGMENTS = [
-  { name: "Advocacia", query: "escritório de advocacia" },
-  { name: "Clínica de estética facial", query: "clínica de estética facial" },
-  { name: "Clínica odontológica", query: "clínica odontológica" },
-  { name: "Academia", query: "academia de ginástica; academia de musculação" },
+// Nome, texto da busca no Google e CNAEs de 7 dígitos separados por vírgula.
+// Segmento que já existe no banco não é alterado nem apagado.
+const SEED_SEGMENTS: { name: string; query: string; cnaes: string }[] = [
+  // { name: "Padaria", query: "padaria", cnaes: "1091101" },
 ];
 
 function createDb() {
@@ -31,7 +30,7 @@ function createDb() {
   migrate(db, { migrationsFolder: path.join(process.cwd(), "drizzle") });
 
   if (SEED_CITIES.length > 0) db.insert(schema.cities).values(SEED_CITIES).onConflictDoNothing().run();
-  db.insert(schema.segments).values(SEED_SEGMENTS).onConflictDoNothing().run();
+  if (SEED_SEGMENTS.length > 0) db.insert(schema.segments).values(SEED_SEGMENTS).onConflictDoNothing().run();
 
   // A fila vive na memória do processo: buscas pendentes de uma execução anterior não vão continuar.
   db.update(schema.searches)

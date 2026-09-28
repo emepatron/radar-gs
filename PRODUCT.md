@@ -20,7 +20,7 @@ A busca, a pontuação e a planilha não dependem do CNPJ. O cruzamento com a Re
 
 ## Operating Context
 
-Roda em localhost. A pessoa cadastra as cidades dela, escolhe os segmentos, acompanha a cota do mês, filtra leads, enriquece com a base pública da Receita e exporta. Os segmentos de exemplo são advocacia, estética facial, odontologia e academia.
+Roda em localhost. A pessoa cadastra as cidades e os segmentos dela, acompanha a cota do mês, filtra leads, enriquece com a base pública da Receita e exporta. O CNAE de cada segmento é o que ela informar.
 
 ## Capabilities and Constraints
 

@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import { db } from "../db";
-import { cnpjEstablishments, places } from "../db/schema";
+import { cnpjEstablishments, places, segments } from "../db/schema";
 import { indexEstablishments, matchPlace } from "./match";
 import { getCnpjImportedAt } from "./meta";
 import type { Establishment } from "./parse";
@@ -35,6 +35,7 @@ export function crossQualified(leads: CrossLead[], onlySegment: string | null) {
   const skipped = leads.length - pending.length;
   if (pending.length === 0) return { confirmed: 0, unconfirmed: 0, skipped };
 
+  const catalog = db.select({ name: segments.name, cnaes: segments.cnaes }).from(segments).all();
   const cache = new Map<string, ReturnType<typeof indexEstablishments>>();
   const now = new Date();
   let confirmed = 0;
@@ -62,7 +63,7 @@ export function crossQualified(leads: CrossLead[], onlySegment: string | null) {
       const result = matchPlace(
         { name: lead.name, address: lead.address },
         index,
-        cnaesForSegmentNames(names),
+        cnaesForSegmentNames(catalog, names),
       );
       const cleared = {
         cnpj: null,

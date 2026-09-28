@@ -78,14 +78,7 @@ O cruzamento compara o nome do Google com o nome fantasia e a razão social na m
 | Nome igual, único, mas a rua diverge | — | Não |
 | Nenhum CNPJ ou dois CNPJs diferentes | — | Não |
 
-A taxa mede só se o anúncio é aquela empresa. Ao lado, separado, fica **CNAE confere** ou **CNAE diverge**. Empresa baixada ou inapta continua na lista, com a situação escrita na linha.
-
-| Segmento | CNAE que confere |
-| --- | --- |
-| Advocacia | 6911-7/01 |
-| Clínica de estética facial | 9602-5/02 |
-| Clínica odontológica | 8630-5/04 |
-| Academia | 9313-1/00 |
+A taxa mede só se o anúncio é aquela empresa. Ao lado, separado, fica **CNAE confere** ou **CNAE diverge**, se o segmento tiver CNAE cadastrado. Sem código no segmento, a linha diz "Sem CNAE no segmento". Empresa baixada ou inapta continua na lista, com a situação escrita na linha.
 
 Vale o CNAE principal ou um secundário. A exportação de Enriquecidos grava, na aba `Enriquecidos`: place_id, nome, pontuação, taxa, CNPJ, razão social, situação, CNAE, conferência do CNAE, telefone, WhatsApp, cidade, segmentos, Google Maps e observação. Quem foi descadastrado e já estava nessa aba é marcado como "NÃO CONTATAR" na próxima exportação.
 
@@ -93,7 +86,9 @@ Vale o CNAE principal ou um secundário. A exportação de Enriquecidos grava, n
 
 As cidades não vêm prontas. Em `src/lib/db/index.ts`, preencha `SEED_CITIES` com o nome oficial do município e a sigla do estado, por exemplo `{ name: "Campinas", uf: "SP" }`. Reinicie o `npm run dev`. A cidade nova entra no banco. Cidade que já estava lá não é alterada nem apagada.
 
-Os segmentos de exemplo são Advocacia, Clínica de estética facial, Clínica odontológica e Academia. Troque ou acrescente em `SEED_SEGMENTS`, no mesmo arquivo, e reinicie. O campo `query` é o texto enviado ao Google (o radar acrescenta "em <cidade>"). Várias frases no mesmo segmento se separam com `;`. Cada frase é uma varredura e gasta cota. Academia usa isso, então consome cerca do dobro de buscas de um segmento com frase única. O mesmo lugar não entra duas vezes.
+Os segmentos também não vêm prontos. No mesmo arquivo, preencha `SEED_SEGMENTS` com o nome, o texto da busca e os CNAEs. Exemplo: `{ name: "Padaria", query: "padaria", cnaes: "1091101" }`. O CNAE pode ir com a máscara (`1091-1/01`) ou só os 7 dígitos. Vários códigos se separam por vírgula. Sem CNAE, o cruzamento ainda confirma a empresa, mas não diz se a atividade confere.
+
+O campo `query` é o texto enviado ao Google (o radar acrescenta "em <cidade>"). Várias frases no mesmo segmento se separam com `;`. Cada frase é uma varredura e gasta cota. O mesmo lugar não entra duas vezes. Reinicie o `npm run dev` depois de editar. Segmento que já estava no banco não é alterado nem apagado.
 
 ## Custo e cota
 
@@ -162,7 +157,7 @@ Mudou o `schema.ts`? Rodar `npm run db:generate`; a migração é aplicada ao in
 ## Testes
 
 ```bash
-npm test          # 47 testes: leitura de site, WhatsApp, pontuação, órgão público, SSRF, cruzamento de CNPJ, cota diária
+npm test          # 48 testes: leitura de site, WhatsApp, pontuação, órgão público, SSRF, cruzamento de CNPJ, cota diária
 npm run typecheck
 ```
 
