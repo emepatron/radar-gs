@@ -1,0 +1,48 @@
+import fs from "node:fs";
+import path from "node:path";
+import Database from "better-sqlite3";
+import { inArray } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import * as schema from "./schema";
+
+const SEED_CITIES = [
+  { name: "Lucas do Rio Verde", uf: "MT" },
+  { name: "Sorriso", uf: "MT" },
+  { name: "Sinop", uf: "MT" },
+  { name: "Cuiabá", uf: "MT" },
+];
+
+const SEED_SEGMENTS = [
+  { name: "Advocacia", query: "escritório de advocacia" },
+  { name: "Clínica de estética facial", query: "clínica de estética facial" },
+  { name: "Clínica odontológica", query: "clínica odontológica" },
+  { name: "Academia", query: "academia de ginástica; academia de musculação" },
+];
+
+function createDb() {
+  const dataDir = path.join(process.cwd(), "data");
+  fs.mkdirSync(dataDir, { recursive: true });
+
+  const sqlite = new Database(path.join(dataDir, "radar.db"));
+  sqlite.pragma("journal_mode = WAL");
+  sqlite.pragma("foreign_keys = ON");
+
+  const db = drizzle(sqlite, { schema });
+  migrate(db, { migrationsFolder: path.join(process.cwd(), "drizzle") });
+
+  db.insert(schema.cities).values(SEED_CITIES).onConflictDoNothing().run();
+  db.insert(schema.segments).values(SEED_SEGMENTS).onConflictDoNothing().run();
+
+  // A fila vive na memória do processo: buscas pendentes de uma execução anterior não vão continuar.
+  db.update(schema.searches)
+    .set({ status: "interrupted", finishedAt: new Date() })
+    .where(inArray(schema.searches.status, ["queued", "running"]))
+    .run();
+
+  return db;
+}
+
+const globalForDb = globalThis as unknown as { radarDb?: ReturnType<typeof createDb> };
+
+export const db = globalForDb.radarDb ?? (globalForDb.radarDb = createDb());

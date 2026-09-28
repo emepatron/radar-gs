@@ -1,0 +1,10 @@
+node_modules/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+data/
+.env
+.env.*
+.envrc
+*.json.key
+output/

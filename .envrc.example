@@ -1,0 +1,6 @@
+# Copie para .envrc e preencha com as suas credenciais.
+# O .envrc não vai para o Git. Não cole chave neste arquivo de exemplo.
+
+export GOOGLE_PLACES_API_KEY="sua-chave-da-places-api"
+export GOOGLE_SHEETS_SA_JSON="$(cat /caminho/seguro/conta-de-servico.json)"
+export RADAR_SHEET_ID="id-da-sua-planilha"
