@@ -1,4 +1,8 @@
-# Radar GS
+<p align="center">
+  <img src="assets/logo.png" width="120" alt="Radar">
+</p>
+
+<h1 align="center">Radar</h1>
 
 Painel local de prospecção. Busca negócios no Google Maps por segmento e cidade, lê o site de cada negócio, pontua os leads e exporta para o Google Sheets. Um passo opcional cruza os qualificados com a base pública da Receita Federal para confirmar CNPJ, situação e CNAE.
 
@@ -168,3 +172,7 @@ npm run typecheck
 - Cidades e segmentos só são adicionados pelo código (ainda não há tela para isso).
 - Se a Receita trocar o link público dos dados abertos, atualizar o token em `scripts/import-cnpj.ts`. Esse token é o compartilhamento público dos dados abertos, não uma credencial do projeto.
 - Os alertas moderados do `npm audit` estão no `drizzle-kit` (ferramenta de desenvolvimento). Não afetam o painel.
+
+## Licença
+
+[MIT](LICENSE).
