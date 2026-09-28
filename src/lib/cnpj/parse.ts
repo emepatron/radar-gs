@@ -1,6 +1,6 @@
 import { normalizeName } from "./text";
 
-export const TARGET_CITIES = ["Lucas do Rio Verde", "Sorriso", "Sinop", "Cuiabá"] as const;
+export type RadarCity = { name: string; uf: string };
 
 const SITUACAO: Record<string, string> = {
   "01": "Nula",
@@ -25,9 +25,17 @@ export type Establishment = {
   municipio: string;
 };
 
-export function canonicalCity(receitaName: string): (typeof TARGET_CITIES)[number] | null {
-  const normalized = normalizeName(receitaName);
-  return TARGET_CITIES.find((city) => normalizeName(city) === normalized) ?? null;
+export function ufsByCity(cities: RadarCity[]): Map<string, Set<string>> {
+  const map = new Map<string, Set<string>>();
+  for (const city of cities) {
+    const key = normalizeName(city.name);
+    const uf = city.uf.trim().toUpperCase();
+    if (!key || uf.length !== 2) continue;
+    const set = map.get(key) ?? new Set<string>();
+    set.add(uf);
+    map.set(key, set);
+  }
+  return map;
 }
 
 export function municipioCode(value: string): string {
@@ -84,10 +92,15 @@ export function rowsFromCsv(text: string): string[][] {
   return rows;
 }
 
-export function buildMunicipioMap(rows: Iterable<string[]>): Map<string, string> {
+export function buildMunicipioMap(rows: Iterable<string[]>, cities: RadarCity[]): Map<string, string> {
+  const byName = new Map<string, string>();
+  for (const city of cities) {
+    const key = normalizeName(city.name);
+    if (key && !byName.has(key)) byName.set(key, city.name.trim());
+  }
   const map = new Map<string, string>();
   for (const cols of rows) {
-    const city = canonicalCity(cols[1] ?? "");
+    const city = byName.get(normalizeName(cols[1] ?? ""));
     if (!city) continue;
     map.set(municipioCode(cols[0] ?? ""), city);
   }
@@ -111,11 +124,13 @@ export function estabelecimentoFromRow(
   cols: string[],
   municipioByCode: Map<string, string>,
   cnaeByCode: Map<string, string>,
+  ufs: Map<string, Set<string>>,
 ): Establishment | null {
   if (cols.length < 21) return null;
-  if ((cols[19] ?? "").trim().toUpperCase() !== "MT") return null;
   const municipio = municipioByCode.get(municipioCode(cols[20] ?? ""));
   if (!municipio) return null;
+  const uf = (cols[19] ?? "").trim().toUpperCase();
+  if (!ufs.get(normalizeName(municipio))?.has(uf)) return null;
 
   const cnpjBasico = padDigits(cols[0] ?? "", 8);
   const cnpj = `${cnpjBasico}${padDigits(cols[1] ?? "", 4)}${padDigits(cols[2] ?? "", 2)}`;

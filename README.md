@@ -32,7 +32,7 @@ A chave e o JSON nunca vão para o código, para o chat nem para o Git. O `GOOGL
 
 ### O que não copiar de outra pessoa
 
-Não copie `data/`, `.envrc` nem exportação de planilha. O banco nasce vazio na primeira execução e já traz as cidades e os segmentos iniciais. A base da Receita se baixa pelo botão, na tela de leads, uma vez por mês. O download passa de 6 GB, filtra as quatro cidades e apaga os arquivos grandes. Sem essa base, "Enriquecer dados" só avisa.
+Não copie `data/`, `.envrc` nem exportação de planilha. O banco nasce vazio na primeira execução. As cidades são as que você colocar em `SEED_CITIES`, em `src/lib/db/index.ts`, antes de subir o servidor. A base da Receita se baixa pelo botão, na tela de leads, uma vez por mês. O download passa de 6 GB, fica só com as cidades cadastradas e apaga os arquivos grandes. Sem essa base, "Enriquecer dados" só avisa.
 
 ## Como usar
 
@@ -66,7 +66,7 @@ O botão **Baixar base da Receita**, na tela de leads, baixa a base pública uma
 
 Durante o download, a tela de leads mostra uma barra com a porcentagem e o arquivo em leitura. A barra depende de `node scripts/watch-cnpj-import.mjs` rodando ao lado. O script compara o arquivo em download com o tamanho de cada arquivo da Receita e grava `data/cnpj-progress.json`. Sem ele, a tela mostra só o texto "Baixando". Os tamanhos de referência no script são de setembro de 2026. Nos meses seguintes a porcentagem é aproximada.
 
-O comando baixa o mês mais recente dos dados abertos da Receita (compartilhamento público em `arquivos.receitafederal.gov.br`, pasta `Dados/Cadastros/CNPJ`). Usa estabelecimentos, empresas, municípios e CNAEs. Fica só com Lucas do Rio Verde, Sorriso, Sinop e Cuiabá, e apaga cada arquivo depois de filtrar. O maior arquivo passa de 2 GB. Não baixa o quadro de sócios: telefone e e-mail de pessoa física não entram. A base fica em `data/radar.db`, que já está fora do Git. Se a importação filtrar menos de 1.000 estabelecimentos, ela para e mantém a base anterior.
+O comando baixa o mês mais recente dos dados abertos da Receita (compartilhamento público em `arquivos.receitafederal.gov.br`, pasta `Dados/Cadastros/CNPJ`). Usa estabelecimentos, empresas, municípios e CNAEs. Fica só com as cidades cadastradas no banco, em qualquer estado, e apaga cada arquivo depois de filtrar. O nome tem de ser o nome oficial do município. O maior arquivo passa de 2 GB. Não baixa o quadro de sócios: telefone e e-mail de pessoa física não entram. A base fica em `data/radar.db`, que já está fora do Git. Se nenhuma cidade for encontrada, ou se não sobrar estabelecimento, a importação para e mantém a base anterior.
 
 O cruzamento compara o nome do Google com o nome fantasia e a razão social na mesma cidade. Tira acento e sufixo jurídico do final do nome (LTDA, ME, EPP, S/A). "Nome parecido" exige o nome inteiro de um lado dentro do outro, com tamanho mínimo, para uma palavra curta como "clínica" não casar com tudo. Dois endereços da mesma empresa (matriz e filial) contam como um CNPJ.
 
@@ -91,11 +91,9 @@ Vale o CNAE principal ou um secundário. A exportação de Enriquecidos grava, n
 
 ## Cidades e segmentos
 
-Cadastrados: Lucas do Rio Verde, Sorriso, Sinop e Cuiabá (MT); Advocacia, Clínica de estética facial, Clínica odontológica e Academia.
+As cidades não vêm prontas. Em `src/lib/db/index.ts`, preencha `SEED_CITIES` com o nome oficial do município e a sigla do estado, por exemplo `{ name: "Campinas", uf: "SP" }`. Reinicie o `npm run dev`. A cidade nova entra no banco. Cidade que já estava lá não é alterada nem apagada.
 
-Academia dispara duas buscas na mesma cidade: "academia de ginástica" e "academia de musculação". O mesmo lugar não entra duas vezes.
-
-Para adicionar, editar `SEED_CITIES` ou `SEED_SEGMENTS` em `src/lib/db/index.ts` e reiniciar o `npm run dev`. Os novos entram no banco na inicialização; os existentes não são alterados. O campo `query` é o texto enviado ao Google (o radar acrescenta "em <cidade>"). Várias frases no mesmo segmento se separam com `;`. Cada frase é uma varredura e gasta cota. Academia usa isso, então consome cerca do dobro de buscas de um segmento com frase única.
+Os segmentos de exemplo são Advocacia, Clínica de estética facial, Clínica odontológica e Academia. Troque ou acrescente em `SEED_SEGMENTS`, no mesmo arquivo, e reinicie. O campo `query` é o texto enviado ao Google (o radar acrescenta "em <cidade>"). Várias frases no mesmo segmento se separam com `;`. Cada frase é uma varredura e gasta cota. Academia usa isso, então consome cerca do dobro de buscas de um segmento com frase única. O mesmo lugar não entra duas vezes.
 
 ## Custo e cota
 
@@ -137,7 +135,7 @@ src/
     leads.ts                  Consulta de leads com filtros
     sheets.ts                 Exportação para o Google Sheets
     settings.ts               Configurações com valores padrão
-scripts/import-cnpj.ts        Baixa a base da Receita e fica só com as quatro cidades
+scripts/import-cnpj.ts        Baixa a base da Receita e fica só com as cidades cadastradas
 scripts/watch-cnpj-import.mjs Porcentagem do download para a barra da tela de leads
 drizzle/                      Migrações SQL geradas
 data/radar.db                 Banco (fora do Git)
@@ -147,7 +145,7 @@ data/radar.db                 Banco (fora do Git)
 
 Banco SQLite em `data/radar.db`, na pasta do projeto. Não é contêiner nem serviço: é um arquivo aberto pelo próprio Next.js. Para backup, copiar a pasta `data/` com o servidor parado. Essa pasta não entra no Git.
 
-Tabelas: `cities`, `segments`, `searches`, `places`, `place_searches` (em quais buscas cada negócio apareceu), `api_usage` (cada chamada ao Google), `settings` e `cnpj_establishments` (estabelecimentos das quatro cidades, vindos da Receita).
+Tabelas: `cities`, `segments`, `searches`, `places`, `place_searches` (em quais buscas cada negócio apareceu), `api_usage` (cada chamada ao Google), `settings` e `cnpj_establishments` (estabelecimentos das cidades cadastradas, vindos da Receita).
 
 Mudou o `schema.ts`? Rodar `npm run db:generate`; a migração é aplicada ao iniciar o servidor.
 
@@ -164,7 +162,7 @@ Mudou o `schema.ts`? Rodar `npm run db:generate`; a migração é aplicada ao in
 ## Testes
 
 ```bash
-npm test          # 45 testes: leitura de site, WhatsApp, pontuação, órgão público, SSRF, cruzamento de CNPJ, cota diária
+npm test          # 47 testes: leitura de site, WhatsApp, pontuação, órgão público, SSRF, cruzamento de CNPJ, cota diária
 npm run typecheck
 ```
 

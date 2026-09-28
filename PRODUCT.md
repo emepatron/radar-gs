@@ -20,7 +20,7 @@ A busca, a pontuação e a planilha não dependem do CNPJ. O cruzamento com a Re
 
 ## Operating Context
 
-Roda em localhost. A pessoa escolhe cidade e segmentos, acompanha a cota do mês, filtra leads, enriquece com a base pública da Receita e exporta. Cidades iniciais: Lucas do Rio Verde, Sorriso, Sinop e Cuiabá. Segmentos iniciais: advocacia, estética facial, odontologia e academia.
+Roda em localhost. A pessoa cadastra as cidades dela, escolhe os segmentos, acompanha a cota do mês, filtra leads, enriquece com a base pública da Receita e exporta. Os segmentos de exemplo são advocacia, estética facial, odontologia e academia.
 
 ## Capabilities and Constraints
 

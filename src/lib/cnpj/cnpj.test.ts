@@ -7,7 +7,9 @@ import {
   estabelecimentoFromRow,
   razaoFromEmpresaRow,
   rowsFromCsv,
+  ufsByCity,
   type Establishment,
+  type RadarCity,
 } from "./parse";
 import { cnaesForSegmentNames } from "./segments";
 import { importBlockedThisMonth, monthKeyCuiaba, nextMonthName } from "./import-job";
@@ -130,13 +132,18 @@ describe("matchPlace", () => {
 describe("parse da Receita", () => {
   const municipios = rowsFromCsv('"9925";"LUCAS DO RIO VERDE"\n"9067";"CUIABA"\n"3550308";"SAO PAULO"\n');
   const cnaes = rowsFromCsv('"9313100";"Atividades de condicionamento físico"\n');
-  const municipioByCode = buildMunicipioMap(municipios);
+  const cities: RadarCity[] = [
+    { name: "Lucas do Rio Verde", uf: "MT" },
+    { name: "Cuiabá", uf: "MT" },
+  ];
+  const municipioByCode = buildMunicipioMap(municipios, cities);
   const cnaeByCode = buildCnaeMap(cnaes);
+  const ufs = ufsByCity(cities);
 
-  it("fica só com estabelecimento de Mato Grosso nas cidades do radar", () => {
+  it("fica só com estabelecimento das cidades cadastradas", () => {
     const line =
       '"12345678";"0001";"90";"1";"ACADEMIA FORTE";"02";"20200101";"00";"";"";"20200101";"9313100";"9311500";"RUA";"DAS FLORES";"123";"";"CENTRO";"78455000";"MT";"9925";"65";"99999999";"";"";"";"";"";"";""';
-    const row = estabelecimentoFromRow(rowsFromCsv(line)[0]!, municipioByCode, cnaeByCode);
+    const row = estabelecimentoFromRow(rowsFromCsv(line)[0]!, municipioByCode, cnaeByCode, ufs);
     expect(row).toMatchObject({
       cnpj: "12345678000190",
       municipio: "Lucas do Rio Verde",
@@ -148,10 +155,27 @@ describe("parse da Receita", () => {
     expect(municipioByCode.get("9067")).toBe("Cuiabá");
   });
 
-  it("descarta estabelecimento de outro estado", () => {
+  it("descarta cidade que não está cadastrada", () => {
     const line =
       '"12345678";"0001";"90";"1";"ACADEMIA FORTE";"02";"20200101";"00";"";"";"20200101";"9313100";"";"RUA";"DAS FLORES";"123";"";"CENTRO";"01000000";"SP";"3550308";"";"";"";"";"";"";"";"";""';
-    expect(estabelecimentoFromRow(rowsFromCsv(line)[0]!, municipioByCode, cnaeByCode)).toBeNull();
+    expect(estabelecimentoFromRow(rowsFromCsv(line)[0]!, municipioByCode, cnaeByCode, ufs)).toBeNull();
+  });
+
+  it("aceita cidade de outro estado quando ela está cadastrada", () => {
+    const paulo: RadarCity[] = [{ name: "São Paulo", uf: "SP" }];
+    const map = buildMunicipioMap(municipios, paulo);
+    const line =
+      '"12345678";"0001";"90";"1";"ACADEMIA FORTE";"02";"20200101";"00";"";"";"20200101";"9313100";"";"RUA";"DAS FLORES";"123";"";"CENTRO";"01000000";"SP";"3550308";"";"";"";"";"";"";"";"";""';
+    const row = estabelecimentoFromRow(rowsFromCsv(line)[0]!, map, cnaeByCode, ufsByCity(paulo));
+    expect(row?.municipio).toBe("São Paulo");
+  });
+
+  it("descarta o município quando a sigla do estado não confere", () => {
+    const errado: RadarCity[] = [{ name: "São Paulo", uf: "MT" }];
+    const map = buildMunicipioMap(municipios, errado);
+    const line =
+      '"12345678";"0001";"90";"1";"ACADEMIA FORTE";"02";"20200101";"00";"";"";"20200101";"9313100";"";"RUA";"DAS FLORES";"123";"";"CENTRO";"01000000";"SP";"3550308";"";"";"";"";"";"";"";"";""';
+    expect(estabelecimentoFromRow(rowsFromCsv(line)[0]!, map, cnaeByCode, ufsByCity(errado))).toBeNull();
   });
 
   it("lê a razão social da empresa", () => {
